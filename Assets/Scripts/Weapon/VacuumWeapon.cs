@@ -23,8 +23,8 @@ public class VacuumWeapon : MonoBehaviour
     public AudioSource vacuumSound;
     public LineRenderer vacuumLine;
 
-    // Events
-    public event Action<RaycastHit[]> OnVacuumHitsDetected;
+    // Events - ESKİ EVENT KALDIRILDI, YENİ EVENT EKLENDİ
+    public event Action<Collider[]> OnVacuumCollidersDetected;  // YENİ EVENT
     public event Action OnVacuumStarted;
     public event Action OnVacuumStopped;
     public event Action OnOverheated;
@@ -48,6 +48,7 @@ public class VacuumWeapon : MonoBehaviour
     public float PullRadius => pullRadius;
     public float PullStrength => pullStrength;
     public Transform FirePoint => firePoint;
+    public float Range => pullRadius; // EnemyVacuumManager için eklendi
 
     void Start()
     {
@@ -111,19 +112,18 @@ public class VacuumWeapon : MonoBehaviour
         OnVacuumStopped?.Invoke();
     }
 
+    // DEĞİŞTİRİLEN METHOD - Artık OverlapSphere kullanıyor
     private void PerformVacuumScan()
     {
-        // SphereCast ile nesneleri bul
-        RaycastHit[] hits = Physics.SphereCastAll(
-            firePoint.position,
-            pullRadius,
-            firePoint.forward,
-            pullRadius * 2f,
+        // OverlapSphere ile etrafındaki tüm collider'ları bul
+        Collider[] colliders = Physics.OverlapSphere(
+            firePoint.position, 
+            pullRadius, 
             vacuumLayers
         );
 
-        // Event ile hit'leri diğer sistemlere bildir
-        OnVacuumHitsDetected?.Invoke(hits);
+        // Event ile collider'ları diğer sistemlere bildir
+        OnVacuumCollidersDetected?.Invoke(colliders);
     }
 
     private void HandleHeatSystem()

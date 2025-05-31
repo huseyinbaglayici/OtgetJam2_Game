@@ -3,11 +3,10 @@ using System.Collections.Generic;
 
 public class EnemyVacuumManager : MonoBehaviour
 {
-    [Header("Settings")]
-    [SerializeField] private float destructionDistance = 1.5f;
+    [Header("Settings")] [SerializeField] private float destructionDistance = 1.5f;
     [SerializeField] private GameObject destructionEffect;
     [SerializeField] private AudioClip destructionSound;
-    
+
     private VacuumWeapon vacuumWeapon;
     private AudioSource audioSource;
     private List<GameObject> pulledEnemies = new List<GameObject>();
@@ -16,13 +15,20 @@ public class EnemyVacuumManager : MonoBehaviour
     {
         vacuumWeapon = GetComponent<VacuumWeapon>();
         audioSource = GetComponent<AudioSource>();
-        
-        vacuumWeapon.OnVacuumHitsDetected += OnVacuumHit;
+
+        if (vacuumWeapon == null)
+        {
+            return;
+        }
+
+        vacuumWeapon.OnVacuumCollidersDetected += OnVacuumHit;
         vacuumWeapon.OnVacuumStopped += OnVacuumStopped;
     }
 
     void Update()
     {
+        if (vacuumWeapon == null) return;
+
         if (vacuumWeapon.IsFiring)
         {
             PullEnemies();
@@ -30,29 +36,43 @@ public class EnemyVacuumManager : MonoBehaviour
         }
     }
 
-    private void OnVacuumHit(RaycastHit[] hits)
+    private void OnVacuumHit(Collider[] colliders)
     {
         List<GameObject> currentEnemies = new List<GameObject>();
-        
-        foreach (var hit in hits)
+
+        foreach (var collider in colliders)
         {
-            IVacuumable vacuumable = hit.collider.GetComponent<IVacuumable>();
-            if (vacuumable != null && vacuumable.CanBeVacuumed)
+            if (collider == null)
             {
-                currentEnemies.Add(hit.collider.gameObject);
-                
-                // Yeni enemy ise OnVacuumStart çağır
-                if (!pulledEnemies.Contains(hit.collider.gameObject))
+                continue;
+            }
+
+
+            IVacuumable vacuumable = collider.GetComponent<IVacuumable>();
+            if (vacuumable != null)
+            {
+                if (vacuumable.CanBeVacuumed)
                 {
-                    pulledEnemies.Add(hit.collider.gameObject);
-                    vacuumable.OnVacuumStart();
+                    currentEnemies.Add(collider.gameObject);
+
+                    // Yeni enemy ise OnVacuumStart çağır
+                    if (!pulledEnemies.Contains(collider.gameObject))
+                    {
+                        pulledEnemies.Add(collider.gameObject);
+                        vacuumable.OnVacuumStart();
+                    }
                 }
             }
         }
-        
-        // Menzil dışına çıkan enemy'leri temizle
+
         for (int i = pulledEnemies.Count - 1; i >= 0; i--)
         {
+            if (pulledEnemies[i] == null)
+            {
+                pulledEnemies.RemoveAt(i);
+                continue;
+            }
+
             if (!currentEnemies.Contains(pulledEnemies[i]))
             {
                 GameObject enemy = pulledEnemies[i];
@@ -68,11 +88,11 @@ public class EnemyVacuumManager : MonoBehaviour
         foreach (GameObject enemy in pulledEnemies)
         {
             if (enemy == null) continue;
-            
+
             IVacuumable vacuumable = enemy.GetComponent<IVacuumable>();
             Vector3 direction = (vacuumWeapon.FirePoint.position - enemy.transform.position).normalized;
             float force = vacuumWeapon.PullStrength;
-            
+
             vacuumable.OnVacuumPull(direction, force * Time.deltaTime);
         }
     }
@@ -82,14 +102,14 @@ public class EnemyVacuumManager : MonoBehaviour
         for (int i = pulledEnemies.Count - 1; i >= 0; i--)
         {
             GameObject enemy = pulledEnemies[i];
-            if (enemy == null) 
+            if (enemy == null)
             {
                 pulledEnemies.RemoveAt(i);
                 continue;
             }
 
             float distance = Vector3.Distance(vacuumWeapon.FirePoint.position, enemy.transform.position);
-            
+
             if (distance <= destructionDistance)
             {
                 DestroyEnemy(enemy);
@@ -102,16 +122,15 @@ public class EnemyVacuumManager : MonoBehaviour
     {
         if (destructionEffect != null)
             Instantiate(destructionEffect, enemy.transform.position, enemy.transform.rotation);
-            
+
         if (destructionSound != null && audioSource != null)
             audioSource.PlayOneShot(destructionSound);
-            
+
         Destroy(enemy);
     }
 
     private void OnVacuumStopped()
     {
-        // Tüm enemy'lerin OnVacuumEnd'ini çağır
         foreach (GameObject enemy in pulledEnemies)
         {
             if (enemy != null)
@@ -120,7 +139,7 @@ public class EnemyVacuumManager : MonoBehaviour
                 vacuumable?.OnVacuumEnd();
             }
         }
-        
+
         pulledEnemies.Clear();
     }
 
@@ -128,7 +147,7 @@ public class EnemyVacuumManager : MonoBehaviour
     {
         if (vacuumWeapon != null)
         {
-            vacuumWeapon.OnVacuumHitsDetected -= OnVacuumHit;
+            vacuumWeapon.OnVacuumCollidersDetected -= OnVacuumHit;
             vacuumWeapon.OnVacuumStopped -= OnVacuumStopped;
         }
     }

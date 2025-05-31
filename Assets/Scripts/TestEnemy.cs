@@ -4,7 +4,7 @@ using UnityEngine;
 public class TestEnemy : MonoBehaviour, IVacuumable
 {
     public bool CanBeVacuumed => true;
-    public float VacuumResistance => 0.3f;
+    public float VacuumResistance => 0.1f;
 
     private Rigidbody rb;
 
