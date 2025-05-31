@@ -1,34 +1,43 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Serialization;
+using System;
 
 public class VacuumWeapon : MonoBehaviour
 {
-    [Header("Vacuum Settings")] public float pullRadius = 5f;
+    [Header("Vacuum Settings")] 
+    public float pullRadius = 5f;
     public float pullStrength = 100f;
     public LayerMask vacuumLayers = -1;
     public Transform firePoint;
 
-    [Header("Heat System")] public float maxHeat = 100f;
+    [Header("Heat System")] 
+    public float maxHeat = 100f;
     public float heatIncreaseRate = 30f;
     public float heatDecreaseRate = 20f;
     public float cooldownTime = 3f;
     public float cooldownThreshold = 20f;
 
-    [Header("Effects")] public ParticleSystem vacuumEffect;
+    [Header("Effects")] 
+    public ParticleSystem vacuumEffect;
     public AudioSource vacuumSound;
     public LineRenderer vacuumLine;
+
+    // Events
+    public event Action<RaycastHit[]> OnVacuumHitsDetected;
+    public event Action OnVacuumStarted;
+    public event Action OnVacuumStopped;
+    public event Action OnOverheated;
+    public event Action OnCooledDown;
 
     // Private variables
     private bool isFiring = false;
     private bool isOverheated = false;
     private float currentHeat = 0f;
     private float lastOverheatTime = -999f;
-    private List<Rigidbody> objectsInRange = new List<Rigidbody>();
 
     [FormerlySerializedAs("heatIncreaseRateMultiplier")] [SerializeField]
     private float heatMultiplier = 1;
-
 
     // Public properties
     public bool IsFiring => isFiring;
@@ -36,6 +45,9 @@ public class VacuumWeapon : MonoBehaviour
     public bool CanFire => !isOverheated && (lastOverheatTime == 0f || Time.time - lastOverheatTime > cooldownTime);
     public float CurrentHeat => currentHeat;
     public float HeatPercentage => currentHeat / maxHeat;
+    public float PullRadius => pullRadius;
+    public float PullStrength => pullStrength;
+    public Transform FirePoint => firePoint;
 
     void Start()
     {
@@ -44,19 +56,13 @@ public class VacuumWeapon : MonoBehaviour
 
     void Update()
     {
-        DebugStats();
         HandleHeatSystem();
 
         if (isFiring && CanFire)
         {
-            PerformVacuum();
+            PerformVacuumScan();
             IncreaseHeat();
         }
-    }
-
-    private void DebugStats()
-    {
-        Debug.LogWarning("Current Heat: " + currentHeat);
     }
 
     private void InitializeVacuum()
@@ -83,25 +89,29 @@ public class VacuumWeapon : MonoBehaviour
             firePoint = transform;
     }
 
-
     public void StartFiring()
     {
         if (!CanFire) return;
-        Debug.LogWarning("working");
+        
+        Debug.Log("Vacuum weapon activated");
         isFiring = true;
         ShowVacuumEffects();
         PlayVacuumSound();
+        
+        OnVacuumStarted?.Invoke();
     }
 
     public void StopFiring()
     {
-        Debug.LogWarning("stopped");
+        Debug.Log("Vacuum weapon deactivated");
         isFiring = false;
         HideVacuumEffects();
         StopVacuumSound();
+        
+        OnVacuumStopped?.Invoke();
     }
 
-    private void PerformVacuum()
+    private void PerformVacuumScan()
     {
         // SphereCast ile nesneleri bul
         RaycastHit[] hits = Physics.SphereCastAll(
@@ -112,31 +122,8 @@ public class VacuumWeapon : MonoBehaviour
             vacuumLayers
         );
 
-        objectsInRange.Clear();
-
-        foreach (var hit in hits)
-        {
-            Rigidbody rb = hit.collider.GetComponent<Rigidbody>();
-            if (rb != null && !rb.isKinematic)
-            {
-                objectsInRange.Add(rb);
-                ApplyVacuumForce(rb);
-            }
-        }
-    }
-
-    private void ApplyVacuumForce(Rigidbody targetRb)
-    {
-        Vector3 direction = (firePoint.position - targetRb.position).normalized;
-        float distance = Vector3.Distance(firePoint.position, targetRb.position);
-
-        // Mesafe ile ters orantılı güç
-        float forceMagnitude = pullStrength / (distance + 1f);
-
-        targetRb.AddForce(direction * forceMagnitude * Time.deltaTime, ForceMode.Force);
-
-        // Hava direnci efekti
-        targetRb.linearVelocity *= 0.98f;
+        // Event ile hit'leri diğer sistemlere bildir
+        OnVacuumHitsDetected?.Invoke(hits);
     }
 
     private void HandleHeatSystem()
@@ -153,12 +140,14 @@ public class VacuumWeapon : MonoBehaviour
             isOverheated = true;
             lastOverheatTime = Time.time;
             StopFiring();
+            OnOverheated?.Invoke();
         }
 
         // Overheat'den çık
         if (isOverheated && currentHeat <= cooldownThreshold)
         {
             isOverheated = false;
+            OnCooledDown?.Invoke();
         }
     }
 
@@ -209,6 +198,22 @@ public class VacuumWeapon : MonoBehaviour
         {
             vacuumSound.Stop();
         }
+    }
+
+    // Heat sistemi için public metodlar
+    public void SetHeatMultiplier(float multiplier)
+    {
+        heatMultiplier = multiplier;
+    }
+
+    public void AddHeat(float amount)
+    {
+        currentHeat = Mathf.Min(maxHeat, currentHeat + amount);
+    }
+
+    public void ReduceHeat(float amount)
+    {
+        currentHeat = Mathf.Max(0f, currentHeat - amount);
     }
 
     // Debug
