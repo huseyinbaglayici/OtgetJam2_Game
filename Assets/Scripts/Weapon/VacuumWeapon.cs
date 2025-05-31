@@ -23,7 +23,6 @@ public class VacuumWeapon : MonoBehaviour
     public AudioSource vacuumSound;
     public LineRenderer vacuumLine;
 
-    // Events - ESKİ EVENT KALDIRILDI, YENİ EVENT EKLENDİ
     public event Action<Collider[]> OnVacuumCollidersDetected;  // YENİ EVENT
     public event Action OnVacuumStarted;
     public event Action OnVacuumStopped;

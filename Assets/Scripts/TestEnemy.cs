@@ -34,6 +34,6 @@ public class TestEnemy : MonoBehaviour, IVacuumable
     public void OnVacuumPull(Vector3 direction, float force)
     {
         if (rb != null)
-            rb.AddForce(direction * force * (1f - VacuumResistance));
+            rb.AddForce(direction * (force * (1f - VacuumResistance)));
     }
 }

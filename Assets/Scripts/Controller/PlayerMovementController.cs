@@ -3,7 +3,7 @@ using Unity.Mathematics;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerMovementController : MonoBehaviour
+public class PlayerMovementController : MonoSingleton<PlayerMovementController>
 {
     [Header("Movement Settings")]
     public float movementSpeed = 7f;
