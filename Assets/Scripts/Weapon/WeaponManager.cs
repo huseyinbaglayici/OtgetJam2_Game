@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class WeaponManager : MonoBehaviour
+public class WeaponManager : MonoSingleton<WeaponManager>
 {
     [Header("Weapon")]
     public VacuumWeapon vacuumWeapon;
@@ -77,11 +77,6 @@ public class WeaponManager : MonoBehaviour
         Debug.Log("Vacuum Weapon Collected!");
     }
     
-    // UI için bilgi metodları
-    public string GetCurrentWeaponName()
-    {
-        return hasVacuumWeapon ? "Vacuum Weapon" : "No Weapon";
-    }
     
     public float GetCurrentWeaponHeat()
     {

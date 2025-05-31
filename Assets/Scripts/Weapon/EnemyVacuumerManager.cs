@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using Enemy; // BaseEnemy namespace'i
 
 public class EnemyVacuumManager : MonoBehaviour
 {
@@ -19,7 +20,7 @@ public class EnemyVacuumManager : MonoBehaviour
 
     private VacuumWeapon vacuumWeapon;
     private AudioSource audioSource;
-    private List<GameObject> pulledEnemies = new List<GameObject>();
+    private List<BaseEnemy> pulledEnemies = new List<BaseEnemy>();
 
     void Start()
     {
@@ -56,7 +57,11 @@ public class EnemyVacuumManager : MonoBehaviour
     // 2D sprite'ları raycast ile tespit et
     private void DetectSpriteEnemiesWithRaycast()
     {
+<<<<<<< HEAD
         List<GameObject> currentSpriteEnemies = new List<GameObject>();
+=======
+        List<BaseEnemy> currentEnemies = new List<BaseEnemy>();
+>>>>>>> c77f784 (gg)
         
         Vector3 firePointPos = vacuumWeapon.FirePoint.position;
         Vector3 forwardDirection = vacuumWeapon.FirePoint.forward;
@@ -64,6 +69,7 @@ public class EnemyVacuumManager : MonoBehaviour
         // Cone şeklinde raycast atma
         for (int i = 0; i < raycastCount; i++)
         {
+<<<<<<< HEAD
             // Horizontal açı hesaplama
             float horizontalAngle = ((float)i / raycastCount) * 360f - (detectionAngle / 2f);
             if (Mathf.Abs(horizontalAngle) > detectionAngle / 2f)
@@ -88,6 +94,18 @@ public class EnemyVacuumManager : MonoBehaviour
                     {
                         ProcessSpriteHit(hit.collider.gameObject, currentSpriteEnemies);
                     }
+=======
+            BaseEnemy enemy = hit.collider.GetComponent<BaseEnemy>();
+            if (enemy != null)
+            {
+                currentEnemies.Add(enemy);
+                
+                // Yeni enemy ise listeye ekle ve OnVacuumStart çağır
+                if (!pulledEnemies.Contains(enemy))
+                {
+                    pulledEnemies.Add(enemy);
+                    enemy.OnVacuumStart();
+>>>>>>> c77f784 (gg)
                 }
             }
         }
@@ -124,6 +142,7 @@ public class EnemyVacuumManager : MonoBehaviour
                 continue;
             }
             
+<<<<<<< HEAD
             // Eğer sprite layer'ında ise ve artık tespit edilmiyorsa kaldır
             bool isSprite = ((1 << pulledEnemies[i].layer) & spriteLayerMask) != 0;
             if (isSprite && !currentSpriteEnemies.Contains(pulledEnemies[i]))
@@ -175,10 +194,11 @@ public class EnemyVacuumManager : MonoBehaviour
             // Sadece 3D objeleri kontrol et (sprite'lar raycast ile hallediliyor)
             bool isSprite = ((1 << pulledEnemies[i].layer) & spriteLayerMask) != 0;
             if (!isSprite && !current3DEnemies.Contains(pulledEnemies[i]))
+=======
+            if (!currentEnemies.Contains(pulledEnemies[i]))
+>>>>>>> c77f784 (gg)
             {
-                GameObject enemy = pulledEnemies[i];
-                IVacuumable vacuumable = enemy.GetComponent<IVacuumable>();
-                vacuumable?.OnVacuumEnd();
+                pulledEnemies[i].OnVacuumEnd();
                 pulledEnemies.RemoveAt(i);
             }
         }
@@ -186,15 +206,24 @@ public class EnemyVacuumManager : MonoBehaviour
 
     private void PullEnemies()
     {
-        foreach (GameObject enemy in pulledEnemies)
+        foreach (BaseEnemy enemy in pulledEnemies)
         {
             if (enemy == null) continue;
+<<<<<<< HEAD
 
             IVacuumable vacuumable = enemy.GetComponent<IVacuumable>();
             Vector3 direction = (vacuumWeapon.FirePoint.position - enemy.transform.position).normalized;
             float force = vacuumWeapon.PullStrength;
 
             vacuumable.OnVacuumPull(direction, force * Time.deltaTime);
+=======
+            
+            // DÜZELT: Çekme yönü
+            Vector3 direction = (vacuumWeapon.FirePoint.position - enemy.transform.position).normalized;
+            float force = vacuumWeapon.PullStrength;
+            
+            enemy.OnVacuumPull(direction, force);
+>>>>>>> c77f784 (gg)
         }
     }
 
@@ -202,8 +231,13 @@ public class EnemyVacuumManager : MonoBehaviour
     {
         for (int i = pulledEnemies.Count - 1; i >= 0; i--)
         {
+<<<<<<< HEAD
             GameObject enemy = pulledEnemies[i];
             if (enemy == null)
+=======
+            BaseEnemy enemy = pulledEnemies[i];
+            if (enemy == null) 
+>>>>>>> c77f784 (gg)
             {
                 pulledEnemies.RemoveAt(i);
                 continue;
@@ -220,7 +254,7 @@ public class EnemyVacuumManager : MonoBehaviour
 
             if (distance <= destructionDistance)
             {
-                DestroyEnemy(enemy);
+                DestroyEnemy(enemy.gameObject);
                 pulledEnemies.RemoveAt(i);
             }
         }
@@ -239,12 +273,16 @@ public class EnemyVacuumManager : MonoBehaviour
 
     private void OnVacuumStopped()
     {
+<<<<<<< HEAD
         foreach (GameObject enemy in pulledEnemies)
+=======
+        // Tüm enemy'lerin OnVacuumEnd'ini çağır
+        foreach (BaseEnemy enemy in pulledEnemies)
+>>>>>>> c77f784 (gg)
         {
             if (enemy != null)
             {
-                IVacuumable vacuumable = enemy.GetComponent<IVacuumable>();
-                vacuumable?.OnVacuumEnd();
+                enemy.OnVacuumEnd();
             }
         }
 
