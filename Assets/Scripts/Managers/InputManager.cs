@@ -32,4 +32,9 @@ public class InputManager : MonoSingleton<InputManager>
         float mouseY = Input.GetAxis("Mouse Y");
         return new float2(mouseX, mouseY);
     }
+
+    public bool BLeftClick()
+    {
+        return Input.GetMouseButton(0); // Basılı tutma
+    }
 }
