@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-public class TestEnemy : MonoBehaviour, IVacuumable
+public class TestEnemy : MonoBehaviour
 {
     public bool CanBeVacuumed => true;
     public float VacuumResistance => 0.1f;
