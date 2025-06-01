@@ -20,7 +20,7 @@ public class EnemyVacuumManager : MonoBehaviour
 
     private VacuumWeapon vacuumWeapon;
     private AudioSource audioSource;
-    private List<GameObject> pulledEnemies = new List<GameObject>();
+    private List<BaseEnemy> pulledEnemies = new List<BaseEnemy>();
 
     void Start()
     {
@@ -55,7 +55,7 @@ public class EnemyVacuumManager : MonoBehaviour
 
     private void DetectSpriteEnemiesWithRaycast()
     {
-        List<GameObject> currentSpriteEnemies = new List<GameObject>();
+        List<BaseEnemy> currentSpriteEnemies = new List<BaseEnemy>();
         Vector3 firePointPos = vacuumWeapon.FirePoint.position;
         Vector3 forwardDirection = vacuumWeapon.FirePoint.forward;
 
@@ -87,23 +87,23 @@ public class EnemyVacuumManager : MonoBehaviour
         CleanupSpriteEnemies(currentSpriteEnemies);
     }
 
-    private void ProcessSpriteHit(GameObject hitObject, List<GameObject> currentSpriteEnemies)
+    private void ProcessSpriteHit(GameObject hitObject, List<BaseEnemy> currentSpriteEnemies)
     {
-        IVacuumable vacuumable = hitObject.GetComponent<IVacuumable>();
-        if (vacuumable != null && vacuumable.CanBeVacuumed)
+        BaseEnemy enemy = hitObject.GetComponent<BaseEnemy>();
+        if (enemy != null)
         {
-            currentSpriteEnemies.Add(hitObject);
+            currentSpriteEnemies.Add(enemy);
 
-            if (!pulledEnemies.Contains(hitObject))
+            if (!pulledEnemies.Contains(enemy))
             {
-                pulledEnemies.Add(hitObject);
-                vacuumable.OnVacuumStart();
+                pulledEnemies.Add(enemy);
+                enemy.OnVacuumStart();
                 Debug.Log($"Started vacuuming sprite enemy: {hitObject.name}");
             }
         }
     }
 
-    private void CleanupSpriteEnemies(List<GameObject> currentSpriteEnemies)
+    private void CleanupSpriteEnemies(List<BaseEnemy> currentSpriteEnemies)
     {
         for (int i = pulledEnemies.Count - 1; i >= 0; i--)
         {
@@ -113,11 +113,10 @@ public class EnemyVacuumManager : MonoBehaviour
                 continue;
             }
 
-            bool isSprite = ((1 << pulledEnemies[i].layer) & spriteLayerMask) != 0;
+            bool isSprite = ((1 << pulledEnemies[i].gameObject.layer) & spriteLayerMask) != 0;
             if (isSprite && !currentSpriteEnemies.Contains(pulledEnemies[i]))
             {
-                IVacuumable vacuumable = pulledEnemies[i].GetComponent<IVacuumable>();
-                vacuumable?.OnVacuumEnd();
+                pulledEnemies[i].OnVacuumEnd();
                 pulledEnemies.RemoveAt(i);
             }
         }
@@ -125,7 +124,7 @@ public class EnemyVacuumManager : MonoBehaviour
 
     private void OnVacuumHit(Collider[] colliders)
     {
-        List<GameObject> current3DEnemies = new List<GameObject>();
+        List<BaseEnemy> current3DEnemies = new List<BaseEnemy>();
 
         foreach (var collider in colliders)
         {
@@ -134,15 +133,15 @@ public class EnemyVacuumManager : MonoBehaviour
             bool isSprite = ((1 << collider.gameObject.layer) & spriteLayerMask) != 0;
             if (isSprite && enableSpriteDetection) continue;
 
-            IVacuumable vacuumable = collider.GetComponent<IVacuumable>();
-            if (vacuumable != null && vacuumable.CanBeVacuumed)
+            BaseEnemy enemy = collider.GetComponent<BaseEnemy>();
+            if (enemy != null)
             {
-                current3DEnemies.Add(collider.gameObject);
+                current3DEnemies.Add(enemy);
 
-                if (!pulledEnemies.Contains(collider.gameObject))
+                if (!pulledEnemies.Contains(enemy))
                 {
-                    pulledEnemies.Add(collider.gameObject);
-                    vacuumable.OnVacuumStart();
+                    pulledEnemies.Add(enemy);
+                    enemy.OnVacuumStart();
                 }
             }
         }
@@ -155,11 +154,10 @@ public class EnemyVacuumManager : MonoBehaviour
                 continue;
             }
 
-            bool isSprite = ((1 << pulledEnemies[i].layer) & spriteLayerMask) != 0;
+            bool isSprite = ((1 << pulledEnemies[i].gameObject.layer) & spriteLayerMask) != 0;
             if (!isSprite && !current3DEnemies.Contains(pulledEnemies[i]))
             {
-                IVacuumable vacuumable = pulledEnemies[i].GetComponent<IVacuumable>();
-                vacuumable?.OnVacuumEnd();
+                pulledEnemies[i].OnVacuumEnd();
                 pulledEnemies.RemoveAt(i);
             }
         }
@@ -167,15 +165,14 @@ public class EnemyVacuumManager : MonoBehaviour
 
     private void PullEnemies()
     {
-        foreach (GameObject enemy in pulledEnemies)
+        foreach (BaseEnemy enemy in pulledEnemies)
         {
             if (enemy == null) continue;
 
-            IVacuumable vacuumable = enemy.GetComponent<IVacuumable>();
             Vector3 direction = (vacuumWeapon.FirePoint.position - enemy.transform.position).normalized;
             float force = vacuumWeapon.PullStrength;
 
-            vacuumable?.OnVacuumPull(direction, force * Time.deltaTime);
+            enemy.OnVacuumPull(direction, force * Time.deltaTime);
         }
     }
 
@@ -183,7 +180,7 @@ public class EnemyVacuumManager : MonoBehaviour
     {
         for (int i = pulledEnemies.Count - 1; i >= 0; i--)
         {
-            GameObject enemy = pulledEnemies[i];
+            BaseEnemy enemy = pulledEnemies[i];
             if (enemy == null)
             {
                 pulledEnemies.RemoveAt(i);
@@ -192,14 +189,14 @@ public class EnemyVacuumManager : MonoBehaviour
 
             if (only2DSpriteDestruction)
             {
-                bool isSprite = ((1 << enemy.layer) & spriteLayerMask) != 0;
+                bool isSprite = ((1 << enemy.gameObject.layer) & spriteLayerMask) != 0;
                 if (!isSprite) continue;
             }
 
             float distance = Vector3.Distance(vacuumWeapon.FirePoint.position, enemy.transform.position);
             if (distance <= destructionDistance)
             {
-                DestroyEnemy(enemy);
+                DestroyEnemy(enemy.gameObject);
                 pulledEnemies.RemoveAt(i);
             }
         }
@@ -218,13 +215,12 @@ public class EnemyVacuumManager : MonoBehaviour
 
     private void OnVacuumStopped()
     {
-        foreach (GameObject enemy in pulledEnemies)
+        foreach (BaseEnemy enemy in pulledEnemies)
         {
-            // if (enemy != null)
-            // {
-            //     IVacuumable vacuumable = enemy.GetComponent<IVacuumable>();
-            //     vacuumable?.OnVacuumEnd();
-            // }
+            if (enemy != null)
+            {
+                enemy.OnVacuumEnd();
+            }
         }
 
         pulledEnemies.Clear();
