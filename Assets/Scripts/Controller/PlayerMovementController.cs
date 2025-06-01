@@ -19,7 +19,7 @@ public class PlayerMovementController : MonoSingleton<PlayerMovementController>
     private Vector3 moveDirection;
     private float verticalVelocity;
 
-    private void Awake()
+    protected override void Awake()
     {
         _controller = GetComponent<CharacterController>();
     }

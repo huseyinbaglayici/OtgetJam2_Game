@@ -3,8 +3,7 @@ using UnityEngine;
 public class InputManager : MonoSingleton<InputManager>
 {
     public bool bInputEnabled = true;
-
-
+    public bool bDoomWorldEnabled = false;
     #region InputEnableDisable
 
     public void EnableInput()
@@ -32,9 +31,20 @@ public class InputManager : MonoSingleton<InputManager>
         float mouseY = Input.GetAxis("Mouse Y");
         return new float2(mouseX, mouseY);
     }
-
+    
+    
     public bool BLeftClick()
     {
         return Input.GetMouseButton(0); // Basılı tutma
+    }
+    public bool BEquipPressed()
+    {
+        return Input.GetKeyDown(KeyCode.E);
+    }
+
+    
+    public bool BChangebuttonPressed()
+    {
+        return Input.GetKeyDown(KeyCode.C);
     }
 }
