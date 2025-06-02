@@ -1,4 +1,7 @@
-﻿namespace Weapon
+﻿using System;
+using UnityEngine;
+
+namespace Weapon
 {
     public class WeaponManager : MonoSingleton<WeaponManager>
     {
@@ -12,7 +15,7 @@
             EquipWeapon(0);
         }
 
-        private void EquipWeapon(int index)
+        internal void EquipWeapon(int index)
         {
         }
     }

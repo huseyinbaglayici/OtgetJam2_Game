@@ -4,12 +4,13 @@ namespace Weapon
 {
     public class EquipWeaponObj : MonoBehaviour
     {
+        
         private void OnTriggerStay(Collider other)
         {
-            EquipWeapon(other);
+            CollectItem(other);
         }
 
-        private void EquipWeapon(Collider other)
+        private void CollectItem(Collider other)
         {
             if (other.tag == "Player" && InputManager.Instance.BEquipPressed())
             {
