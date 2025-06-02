@@ -260,7 +260,7 @@ GameObject:
   - component: {fileID: 260327058}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -621,6 +621,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 589374464}
+  - component: {fileID: 589374465}
   m_Layer: 0
   m_Name: WeaponManager
   m_TagString: Untagged
@@ -643,6 +644,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &589374465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 589374463}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4c84f3ac18f4da28fa6873211a8f6cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bWeaponEquipped: 0
+  currentWeaponIndex: 0
 --- !u!1 &609726918
 GameObject:
   m_ObjectHideFlags: 0
@@ -1040,18 +1055,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 260327056}
     m_Modifications:
-    - target: {fileID: -4243277452453751780, guid: 49d228e6d1a857147832b3fda076fc13, type: 3}
-      propertyPath: firePoint
-      value: 
-      objectReference: {fileID: 864359211}
-    - target: {fileID: -4243277452453751780, guid: 49d228e6d1a857147832b3fda076fc13, type: 3}
-      propertyPath: pullStrength
-      value: 2000
-      objectReference: {fileID: 0}
-    - target: {fileID: 437901360677667407, guid: 49d228e6d1a857147832b3fda076fc13, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0.0046350006
-      objectReference: {fileID: 0}
     - target: {fileID: 7428661129140873130, guid: 49d228e6d1a857147832b3fda076fc13, type: 3}
       propertyPath: m_Name
       value: Gun
@@ -1100,8 +1103,7 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: -4243277452453751780, guid: 49d228e6d1a857147832b3fda076fc13, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1109,11 +1111,6 @@ PrefabInstance:
 --- !u!4 &856084267 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7808176725275311376, guid: 49d228e6d1a857147832b3fda076fc13, type: 3}
-  m_PrefabInstance: {fileID: 856084266}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &864359211 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 437901360677667407, guid: 49d228e6d1a857147832b3fda076fc13, type: 3}
   m_PrefabInstance: {fileID: 856084266}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &915331500
@@ -1126,8 +1123,9 @@ GameObject:
   m_Component:
   - component: {fileID: 915331501}
   - component: {fileID: 915331502}
+  - component: {fileID: 915331503}
   m_Layer: 0
-  m_Name: VolumeManager
+  m_Name: GlobalVolumeManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1160,9 +1158,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7abeaaa235839084bada2d07e6bd27d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  volume: {fileID: 1975029548}
-  profiles: []
+  volume: {fileID: 915331503}
+  profiles:
+  - {fileID: 11400000, guid: 1aaeef8638cd2034c92ac98c70dce48a, type: 2}
+  - {fileID: 11400000, guid: 2b92cd004a61e344c8fe2021b45ae0f9, type: 2}
   currentProfileIndex: 0
+--- !u!114 &915331503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 915331500}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: 1aaeef8638cd2034c92ac98c70dce48a, type: 2}
 --- !u!1 &954059415
 GameObject:
   m_ObjectHideFlags: 0
@@ -1577,7 +1594,6 @@ GameObject:
   - component: {fileID: 1975029542}
   - component: {fileID: 1975029546}
   - component: {fileID: 1975029547}
-  - component: {fileID: 1975029548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1735,23 +1751,6 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   CustomBlends: {fileID: 0}
---- !u!114 &1975029548
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1975029541}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IsGlobal: 1
-  priority: 0
-  blendDistance: 0
-  weight: 1
-  sharedProfile: {fileID: 11400000, guid: 1aaeef8638cd2034c92ac98c70dce48a, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Weapon
 {
@@ -8,6 +9,6 @@ namespace Weapon
         public Transform firePoint;
         public Animator weaponAnimator;
         public bool bEquipped = false;
-
+        
     }
 }

@@ -6,7 +6,10 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/GameplayScene_cleaned.unity
+    path: Assets/Scenes/Cutscene.unity
+    guid: 480469283cae2a7489afa1f183859472
+  - enabled: 1
+    path: Assets/Scenes/GamePlay.unity
     guid: e6289fb1624b8e34286a284757c037c6
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
